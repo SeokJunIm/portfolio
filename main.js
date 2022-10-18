@@ -30,11 +30,23 @@ scrollIntoView('#contact');
 const home = document.querySelector('.home__container');
 const homeHeight = home.getBoundingClientRect().height;
 document.addEventListener('scroll', () => {
-  home.style.opacity = 1 - window.scrollY / homeHeight;
+home.style.opacity = 1 - window.scrollY / homeHeight;
 });
 
+// Show "arrow up" Btn  Top menu Scroll
+const arrowUp = document.querySelector('.arrow-up');
+document.addEventListener('scroll', () => {
+    if(window.scrollY > homeHeight /2) {
+        arrowUp.classList.add('visble');
+    }else{
+        arrowUp.classList.remove('visble');
+    }
+});
 
-
+// arrow up btn click하면 TOP Menu 이동
+arrowUp.addEventListener('click', ()=>{
+    scrollIntoView('#home');
+});
 
 //scroll 요소
 function scrollIntoView(selector) {
