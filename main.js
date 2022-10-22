@@ -10,6 +10,7 @@
     //    scroll 이 navbar 높이 보다 크면  navbar 에 있는 navbar--dark class 클래스 추가
     if (window.scrollY > navbarHeight) {
         navbar.classList.add('navbar--dark');
+        
     } else {
     //    scroll 이 navbar 높이 보다 작으면  navbar 에 있는 navbar--dark class 클래스 제거
         navbar.classList.remove('navbar--dark');
@@ -32,6 +33,7 @@
     navbarMenu.classList.remove('open');
     //smooth 하게 이동 하는 메서드  젤밑에 function 참조
     scrollIntoView(link);
+    selectNavItem(target);
     });
 
     // Navbar toggle button for small screen
@@ -118,10 +120,78 @@
     }, 300);
     });
 
-    //scroll 요소
-    //selector 를주면  해당하는 selector로 smooth 하게 이동 하는 메서드
-    function scrollIntoView(selector) {
-        const scrollTo = document.querySelector(selector);
-        scrollTo.scrollIntoView({ behavior: 'smooth' });
+
+// navbar__menu 들의 ID 들의 값을 배열로 담는다
+const sectionIds =[
+    '#home',
+    '#about',
+    '#skills',
+    '#work',
+    '#testimonials',
+    '#contact'
+];
+//id 값들을 받아옴
+const sections = sectionIds.map(id => document.querySelector(id));
+//iteam menu 들의 값을 받아옴
+const navItems = sectionIds.map(id =>
+    document.querySelector(`[data-link="${id}"]`)
+    );
+// console.log(sections);
+// console.log("items:",navItems);
+let selectedNavIndex = 0;
+let selectedNavItem = navItems[0];
+function selectNavItem(selected){
+    selectedNavItem.classList.remove('active');
+    selectedNavItem = selected;
+    selectedNavItem.classList.add('active');
+}
+//scroll 요소
+//selector 를주면  해당하는 selector로 smooth 하게 이동 하는 메서드
+function scrollIntoView(selector) {
+    const scrollTo = document.querySelector(selector);
+    scrollTo.scrollIntoView({ behavior: 'smooth' });
+    selectNavItem(navItems[sectionIds.indexOf(selector)]);
+}
+const observerOptions = {
+    root : null ,
+    rootMargin : '0px' ,
+    threshold : 0.3,
+}
+
+const observerCallback = (entries, observer) => {
+    entries.forEach(entry => {
+//해당요소(화면) id 값이 바뀔때 (사용자 기준) 
+        if(!entry.isIntersecting && entry.intersectionRatio > 0) {
+//해당요소(화면) id 값을 불러옴
+            const index = sectionIds.indexOf(`#${entry.target.id}`);
+
+//y 좌표가 -라면  스크롤링이 아래로 되어서 페이지가 올라옴
+            if(entry.boundingClientRect.y < 0){
+                selectedNavIndex = index + 1;
+            } else {
+//y 좌표가 +라면  이전 index로 지정                
+                selectedNavIndex = index -1;
+            }
+            // console.log(index,entry.target.id); 
+        }
+        // console.log(entry.target);
+    });
+};
+
+const observer = new IntersectionObserver(observerCallback,observerOptions);
+sections.forEach(section => observer.observe(section));
+//scroll 이 될때마다
+//사용자가 스스로 scrolling 을 할때는 wheel 이라는 이벤트 발생
+//scroll 은 브라우저에서 클릭시 자동적으로 발생하는 scrolling 자체 이벤트
+window.addEventListener('scroll',() => {
+//scroll 이 제일 위에있다면 0을 설정
+    if (window.scrollY=== 0){
+        selectedNavIndex = 0;
+//젤 밑에 온 값이 document.body.clientHeight 값과 동일하다면 제일 마지막 배열 값을 선택
+    } else if ( Math.round(window.scrollY + window.innerHeight) >= 
+        document.body.clientHeight) {
+        selectedNavIndex = navItems.length -1;
     }
-    
+//scrolling 이 될 때 마다 해당요소 표시
+    selectNavItem(navItems[selectedNavIndex]);
+});
